@@ -6,7 +6,6 @@
     <title>My Cookie Clicker Game</title>
     <style>
         body {
-            /* Matches your uploaded background file name exactly */
             background: #2c1d11 url('Bakery Background.jpg') repeat;
             background-size: auto;
             color: #ffffff;
@@ -79,6 +78,41 @@
             background-color: #7f8c8d;
             cursor: not-allowed;
         }
+        /* Audio Control Button Styles */
+        #audio-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(74, 51, 25, 0.9);
+            border: 2px solid #6d4c25;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        #mute-btn {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #mute-btn:hover {
+            background-color: #c0392b;
+        }
+        #track-display {
+            font-size: 11px;
+            color: #f1c40f;
+            max-width: 120px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
@@ -93,43 +127,59 @@
 
     <div>
         <button id="cookie-btn" onclick="clickCookie()">
-            <!-- Matches your uploaded cookie file name exactly -->
             <img src="Cookie.png" alt="Cookie">
         </button>
     </div>
 
     <div class="shop-container">
-        <h3>The Bakery Shop</h3>
+        <h3>Automation Center</h3>
         
+        <!-- Modified Tier 1: Digital Auto Clicker -->
         <div class="shop-item">
             <div>
-                <strong>Grandma</strong><br>
-                <span>Produces: +1 CPS</span>
+                <strong>Auto-Clicker Bot</strong><br>
+                <span>Produces: +0.2 CPS</span>
             </div>
-            <button id="buy-grandma" onclick="buyAsset('grandma')">Buy (Cost: 15)</button>
+            <button id="buy-clicker" onclick="buyAsset('clicker')">Buy (Cost: 15)</button>
         </div>
 
+        <!-- Modified Tier 2: Higher level automated scripting -->
         <div class="shop-item">
             <div>
-                <strong>Cookie Factory</strong><br>
-                <span>Produces: +8 CPS</span>
+                <strong>Macro Script</strong><br>
+                <span>Produces: +1.5 CPS</span>
             </div>
-            <button id="buy-factory" onclick="buyAsset('factory')">Buy (Cost: 100)</button>
+            <button id="buy-macro" onclick="buyAsset('macro')">Buy (Cost: 100)</button>
         </div>
     </div>
 
+    <!-- Audio Player Interface Element (Bottom Right) -->
+    <div id="audio-controls">
+        <div id="track-display">Loading music...</div>
+        <button id="mute-btn" onclick="toggleMute()">Mute</button>
+    </div>
+
     <script>
+        // Game Logic Setup
         let cookies = 0;
         let cps = 0;
 
+        // Custom Tech/Automation Themed Upgrades
         const assets = {
-            grandma: { count: 0, baseCost: 15, currentCost: 15, cpsValue: 1 },
-            factory: { count: 0, baseCost: 100, currentCost: 100, cpsValue: 8 }
+            clicker: { count: 0, baseCost: 15, currentCost: 15, cpsValue: 0.2 },
+            macro: { count: 0, baseCost: 100, currentCost: 100, cpsValue: 1.5 }
         };
 
         function clickCookie() {
             cookies += 1;
             updateDisplay();
+            
+            // Web browsers require user interaction before they allow music to play automatically.
+            // This initializes your playlist on the very first click if it hasn't started yet.
+            if (!hasStartedMusic) {
+                playNextTrack();
+                hasStartedMusic = true;
+            }
         }
 
         function buyAsset(type) {
@@ -144,21 +194,81 @@
         }
 
         function calculateCPS() {
-            cps = (assets.grandma.count * assets.grandma.cpsValue) + 
-                  (assets.factory.count * assets.factory.cpsValue);
+            cps = (assets.clicker.count * assets.clicker.cpsValue) + 
+                  (assets.macro.count * assets.macro.cpsValue);
         }
 
         function updateDisplay() {
+            // Display numbers cleaner by rounding down to the nearest whole integer
             document.getElementById('cookie-count').innerText = Math.floor(cookies) + " cookies";
-            document.getElementById('cps-display').innerText = "per second: " + cps;
+            document.getElementById('cps-display').innerText = "per second: " + cps.toFixed(1);
             
-            document.getElementById('buy-grandma').innerText = `Buy (${assets.grandma.currentCost})`;
-            document.getElementById('buy-grandma').disabled = (cookies < assets.grandma.currentCost);
+            document.getElementById('buy-clicker').innerText = `Buy (${assets.clicker.currentCost})`;
+            document.getElementById('buy-clicker').disabled = (cookies < assets.clicker.currentCost);
 
-            document.getElementById('buy-factory').innerText = `Buy (${assets.factory.currentCost})`;
-            document.getElementById('buy-factory').disabled = (cookies < assets.factory.currentCost);
+            document.getElementById('buy-macro').innerText = `Buy (${assets.macro.currentCost})`;
+            document.getElementById('buy-macro').disabled = (cookies < assets.macro.currentCost);
         }
 
+        // --- Multi-track Jukebox Audio System ---
+        const playlist = [
+            'nuance3.ogg',
+            'hal5.ogg',
+            'droopy.ogg',
+            'piano4.ogg',
+            'nuance4.ogg',
+            'menu6.ogg',
+            'menu5.ogg'
+        ];
+        
+        let currentTrackIndex = 0;
+        let isMuted = false;
+        let hasStartedMusic = false;
+        
+        // Create a single background audio container
+        const bgMusic = new Audio();
+
+        function playNextTrack() {
+            if (playlist.length === 0) return;
+            
+            bgMusic.src = playlist[currentTrackIndex];
+            bgMusic.muted = isMuted;
+            
+            // Displays current track text in bottom corner
+            document.getElementById('track-display').innerText = "🎵 " + playlist[currentTrackIndex];
+            
+            bgMusic.play().catch(error => {
+                console.log("Waiting for user tap to play audio track.");
+            });
+
+            // Automatically queue up next track when current one finishes
+            bgMusic.onended = function() {
+                currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+                playNextTrack();
+            };
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            bgMusic.muted = isMuted;
+            
+            const muteBtn = document.getElementById('mute-btn');
+            if (isMuted) {
+                muteBtn.innerText = "Unmute";
+                muteBtn.style.backgroundColor = "#27ae60";
+            } else {
+                muteBtn.innerText = "Mute";
+                muteBtn.style.backgroundColor = "#e74c3c";
+                
+                // If audio layout stalled from lack of click, restart it here
+                if (!hasStartedMusic) {
+                    playNextTrack();
+                    hasStartedMusic = true;
+                }
+            }
+        }
+
+        // Run game tickers
         setInterval(function() {
             if (cps > 0) {
                 cookies += (cps / 10);
