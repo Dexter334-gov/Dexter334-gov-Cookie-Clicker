@@ -6,7 +6,9 @@
     <title>My Cookie Clicker Game</title>
     <style>
         body {
-            background-color: #2c1d11;
+            /* Matches your uploaded background file name exactly */
+            background: #2c1d11 url('Bakery Background.jpg') repeat;
+            background-size: auto;
             color: #ffffff;
             font-family: Arial, sans-serif;
             text-align: center;
@@ -15,15 +17,17 @@
         }
         h1 {
             color: #f1c40f;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
             margin-bottom: 5px;
         }
         .stats-box {
-            background-color: #4a3319;
+            background-color: rgba(74, 51, 25, 0.85);
             padding: 15px;
             border-radius: 10px;
             display: inline-block;
             margin-bottom: 20px;
             border: 2px solid #6d4c25;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
         }
         #cookie-btn {
             background: none;
@@ -38,15 +42,16 @@
         #cookie-btn img {
             width: 200px;
             height: 200px;
-            filter: drop-shadow(0px 8px 10px rgba(0,0,0,0.5));
+            filter: drop-shadow(0px 8px 12px rgba(0,0,0,0.6));
         }
         .shop-container {
             max-width: 400px;
             margin: 30px auto;
-            background: #3d2814;
+            background: rgba(61, 40, 20, 0.9);
             padding: 15px;
             border-radius: 8px;
             border: 2px solid #573c1e;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5);
         }
         .shop-item {
             display: flex;
@@ -88,15 +93,14 @@
 
     <div>
         <button id="cookie-btn" onclick="clickCookie()">
-            <!-- Using an open-source transparent cookie PNG from Wikimedia -->
-            <img src="https://wikimedia.org" alt="Cookie">
+            <!-- Matches your uploaded cookie file name exactly -->
+            <img src="Cookie.png" alt="Cookie">
         </button>
     </div>
 
     <div class="shop-container">
         <h3>The Bakery Shop</h3>
         
-        <!-- Grandmas Item -->
         <div class="shop-item">
             <div>
                 <strong>Grandma</strong><br>
@@ -105,7 +109,6 @@
             <button id="buy-grandma" onclick="buyAsset('grandma')">Buy (Cost: 15)</button>
         </div>
 
-        <!-- Factory Item -->
         <div class="shop-item">
             <div>
                 <strong>Cookie Factory</strong><br>
@@ -116,49 +119,39 @@
     </div>
 
     <script>
-        // Game State Variables
         let cookies = 0;
         let cps = 0;
 
-        // Asset Setup
         const assets = {
             grandma: { count: 0, baseCost: 15, currentCost: 15, cpsValue: 1 },
             factory: { count: 0, baseCost: 100, currentCost: 100, cpsValue: 8 }
         };
 
-        // User Click Event
         function clickCookie() {
             cookies += 1;
             updateDisplay();
         }
 
-        // Purchasing logic
         function buyAsset(type) {
             let asset = assets[type];
             if (cookies >= asset.currentCost) {
                 cookies -= asset.currentCost;
                 asset.count++;
-                
-                // Increase cost exponentially like original game (15% increase)
                 asset.currentCost = Math.floor(asset.baseCost * Math.pow(1.15, asset.count));
-                
                 calculateCPS();
                 updateDisplay();
             }
         }
 
-        // Calculate total Cookies Per Second
         function calculateCPS() {
             cps = (assets.grandma.count * assets.grandma.cpsValue) + 
                   (assets.factory.count * assets.factory.cpsValue);
         }
 
-        // Update the HTML text and disable/enable shop buttons
         function updateDisplay() {
             document.getElementById('cookie-count').innerText = Math.floor(cookies) + " cookies";
             document.getElementById('cps-display').innerText = "per second: " + cps;
             
-            // Update shop button texts and availability
             document.getElementById('buy-grandma').innerText = `Buy (${assets.grandma.currentCost})`;
             document.getElementById('buy-grandma').disabled = (cookies < assets.grandma.currentCost);
 
@@ -166,7 +159,6 @@
             document.getElementById('buy-factory').disabled = (cookies < assets.factory.currentCost);
         }
 
-        // Core Game Loop: Runs 10 times a second for smooth generation
         setInterval(function() {
             if (cps > 0) {
                 cookies += (cps / 10);
@@ -174,7 +166,6 @@
             }
         }, 100);
 
-        // Initial run to clear out default values
         updateDisplay();
     </script>
 
