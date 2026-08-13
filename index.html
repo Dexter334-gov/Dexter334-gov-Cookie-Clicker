@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cookie Clicker Game</title>
+    <style>
+        body {
+            background-color: #2c1d11;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            user-select: none;
+        }
+        h1 {
+            color: #f1c40f;
+            margin-bottom: 5px;
+        }
+        .stats-box {
+            background-color: #4a3319;
+            padding: 15px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 20px;
+            border: 2px solid #6d4c25;
+        }
+        #cookie-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            outline: none;
+            transition: transform 0.05s ease-in-out;
+        }
+        #cookie-btn:active {
+            transform: scale(0.92);
+        }
+        #cookie-btn img {
+            width: 200px;
+            height: 200px;
+            filter: drop-shadow(0px 8px 10px rgba(0,0,0,0.5));
+        }
+        .shop-container {
+            max-width: 400px;
+            margin: 30px auto;
+            background: #3d2814;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #573c1e;
+        }
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #52361b;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 5px;
+            border: 1px solid #6e4924;
+        }
+        .shop-item button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .shop-item button:hover {
+            background-color: #2ecc71;
+        }
+        .shop-item button:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Cookie Clicker</h1>
+    <p>Click the cookie to grow your empire!</p>
+
+    <div class="stats-box">
+        <h2 id="cookie-count">0 cookies</h2>
+        <p id="cps-display">per second: 0</p>
+    </div>
+
+    <div>
+        <button id="cookie-btn" onclick="clickCookie()">
+            <!-- Using an open-source transparent cookie PNG from Wikimedia -->
+            <img src="https://wikimedia.org" alt="Cookie">
+        </button>
+    </div>
+
+    <div class="shop-container">
+        <h3>The Bakery Shop</h3>
+        
+        <!-- Grandmas Item -->
+        <div class="shop-item">
+            <div>
+                <strong>Grandma</strong><br>
+                <span>Produces: +1 CPS</span>
+            </div>
+            <button id="buy-grandma" onclick="buyAsset('grandma')">Buy (Cost: 15)</button>
+        </div>
+
+        <!-- Factory Item -->
+        <div class="shop-item">
+            <div>
+                <strong>Cookie Factory</strong><br>
+                <span>Produces: +8 CPS</span>
+            </div>
+            <button id="buy-factory" onclick="buyAsset('factory')">Buy (Cost: 100)</button>
+        </div>
+    </div>
+
+    <script>
+        // Game State Variables
+        let cookies = 0;
+        let cps = 0;
+
+        // Asset Setup
+        const assets = {
+            grandma: { count: 0, baseCost: 15, currentCost: 15, cpsValue: 1 },
+            factory: { count: 0, baseCost: 100, currentCost: 100, cpsValue: 8 }
+        };
+
+        // User Click Event
+        function clickCookie() {
+            cookies += 1;
+            updateDisplay();
+        }
+
+        // Purchasing logic
+        function buyAsset(type) {
+            let asset = assets[type];
+            if (cookies >= asset.currentCost) {
+                cookies -= asset.currentCost;
+                asset.count++;
+                
+                // Increase cost exponentially like original game (15% increase)
+                asset.currentCost = Math.floor(asset.baseCost * Math.pow(1.15, asset.count));
+                
+                calculateCPS();
+                updateDisplay();
+            }
+        }
+
+        // Calculate total Cookies Per Second
+        function calculateCPS() {
+            cps = (assets.grandma.count * assets.grandma.cpsValue) + 
+                  (assets.factory.count * assets.factory.cpsValue);
+        }
+
+        // Update the HTML text and disable/enable shop buttons
+        function updateDisplay() {
+            document.getElementById('cookie-count').innerText = Math.floor(cookies) + " cookies";
+            document.getElementById('cps-display').innerText = "per second: " + cps;
+            
+            // Update shop button texts and availability
+            document.getElementById('buy-grandma').innerText = `Buy (${assets.grandma.currentCost})`;
+            document.getElementById('buy-grandma').disabled = (cookies < assets.grandma.currentCost);
+
+            document.getElementById('buy-factory').innerText = `Buy (${assets.factory.currentCost})`;
+            document.getElementById('buy-factory').disabled = (cookies < assets.factory.currentCost);
+        }
+
+        // Core Game Loop: Runs 10 times a second for smooth generation
+        setInterval(function() {
+            if (cps > 0) {
+                cookies += (cps / 10);
+                updateDisplay();
+            }
+        }, 100);
+
+        // Initial run to clear out default values
+        updateDisplay();
+    </script>
+
+</body>
+</html>
