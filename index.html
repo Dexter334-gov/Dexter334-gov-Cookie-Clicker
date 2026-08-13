@@ -78,7 +78,6 @@
             background-color: #7f8c8d;
             cursor: not-allowed;
         }
-        /* Audio Control Button Styles */
         #audio-controls {
             position: fixed;
             bottom: 20px;
@@ -92,6 +91,7 @@
             flex-direction: column;
             align-items: center;
             gap: 5px;
+            z-index: 100;
         }
         #mute-btn {
             background-color: #e74c3c;
@@ -108,7 +108,7 @@
         #track-display {
             font-size: 11px;
             color: #f1c40f;
-            max-width: 120px;
+            max-width: 150px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -134,7 +134,6 @@
     <div class="shop-container">
         <h3>Automation Center</h3>
         
-        <!-- Modified Tier 1: Digital Auto Clicker -->
         <div class="shop-item">
             <div>
                 <strong>Auto-Clicker Bot</strong><br>
@@ -143,7 +142,6 @@
             <button id="buy-clicker" onclick="buyAsset('clicker')">Buy (Cost: 15)</button>
         </div>
 
-        <!-- Modified Tier 2: Higher level automated scripting -->
         <div class="shop-item">
             <div>
                 <strong>Macro Script</strong><br>
@@ -153,18 +151,16 @@
         </div>
     </div>
 
-    <!-- Audio Player Interface Element (Bottom Right) -->
+    <!-- Audio Player UI -->
     <div id="audio-controls">
-        <div id="track-display">Loading music...</div>
+        <div id="track-display">Loading soundtrack...</div>
         <button id="mute-btn" onclick="toggleMute()">Mute</button>
     </div>
 
     <script>
-        // Game Logic Setup
         let cookies = 0;
         let cps = 0;
 
-        // Custom Tech/Automation Themed Upgrades
         const assets = {
             clicker: { count: 0, baseCost: 15, currentCost: 15, cpsValue: 0.2 },
             macro: { count: 0, baseCost: 100, currentCost: 100, cpsValue: 1.5 }
@@ -174,8 +170,6 @@
             cookies += 1;
             updateDisplay();
             
-            // Web browsers require user interaction before they allow music to play automatically.
-            // This initializes your playlist on the very first click if it hasn't started yet.
             if (!hasStartedMusic) {
                 playNextTrack();
                 hasStartedMusic = true;
@@ -199,7 +193,6 @@
         }
 
         function updateDisplay() {
-            // Display numbers cleaner by rounding down to the nearest whole integer
             document.getElementById('cookie-count').innerText = Math.floor(cookies) + " cookies";
             document.getElementById('cps-display').innerText = "per second: " + cps.toFixed(1);
             
@@ -210,38 +203,36 @@
             document.getElementById('buy-macro').disabled = (cookies < assets.macro.currentCost);
         }
 
-        // --- Multi-track Jukebox Audio System ---
+        // --- New MP3 Playlist matching your exact filenames ---
         const playlist = [
-            'nuance3.ogg',
-            'hal5.ogg',
-            'droopy.ogg',
-            'piano4.ogg',
-            'nuance4.ogg',
-            'menu6.ogg',
-            'menu5.ogg'
+            '2-06. Moog City 2.mp3',
+            '2-13. Aria Math.mp3',
+            '2-08. Biome Fest.mp3',
+            '2-04. Blind Spots.mp3',
+            '2-30. Intro.mp3'
         ];
         
         let currentTrackIndex = 0;
         let isMuted = false;
         let hasStartedMusic = false;
         
-        // Create a single background audio container
         const bgMusic = new Audio();
 
         function playNextTrack() {
             if (playlist.length === 0) return;
             
-            bgMusic.src = playlist[currentTrackIndex];
+            // encodeURIComponent fixes issues with special characters and spaces in files
+            bgMusic.src = encodeURIComponent(playlist[currentTrackIndex]);
             bgMusic.muted = isMuted;
             
-            // Displays current track text in bottom corner
-            document.getElementById('track-display').innerText = "🎵 " + playlist[currentTrackIndex];
+            // Clean up the text display so it drops the "2-06." prefixes for players
+            let cleanName = playlist[currentTrackIndex].replace(/^\d+-\d+\.\s*/, '').replace('.mp3', '');
+            document.getElementById('track-display').innerText = "🎵 " + cleanName;
             
             bgMusic.play().catch(error => {
-                console.log("Waiting for user tap to play audio track.");
+                console.log("Audio waiting for user click.");
             });
 
-            // Automatically queue up next track when current one finishes
             bgMusic.onended = function() {
                 currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
                 playNextTrack();
@@ -260,7 +251,6 @@
                 muteBtn.innerText = "Mute";
                 muteBtn.style.backgroundColor = "#e74c3c";
                 
-                // If audio layout stalled from lack of click, restart it here
                 if (!hasStartedMusic) {
                     playNextTrack();
                     hasStartedMusic = true;
@@ -268,7 +258,6 @@
             }
         }
 
-        // Run game tickers
         setInterval(function() {
             if (cps > 0) {
                 cookies += (cps / 10);
